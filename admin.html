@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Analytics Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #1a1a2e;
+            color: #eee;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .header h1 {
+            color: white;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 2px solid #0f3460;
+        }
+        
+        .stat-card .number {
+            font-size: 2.5em;
+            color: #ff6b9d;
+            font-weight: bold;
+        }
+        
+        .stat-card .label {
+            color: #aaa;
+            margin-top: 5px;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .btn-export {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .btn-clear {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-back {
+            background: #2196F3;
+            color: white;
+        }
+        
+        .btn-refresh {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .session {
+            background: #16213e;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            border: 2px solid #0f3460;
+            transition: all 0.3s ease;
+        }
+        
+        .session:hover {
+            border-color: #ff6b9d;
+            box-shadow: 0 5px 20px rgba(255, 107, 157, 0.2);
+        }
+        
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .session-title {
+            color: #ff6b9d;
+            font-size: 1.4em;
+            font-weight: bold;
+        }
+        
+        .badge {
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        
+        .badge-yes {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .badge-no {
+            background: #ff9800;
+            color: white;
+        }
+        
+        .session-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 10px;
+            color: #aaa;
+            margin-bottom: 15px;
+        }
+        
+        .info-item {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .info-item strong {
+            color: #fff;
+            min-width: 100px;
+        }
+        
+        details {
+            margin-top: 15px;
+        }
+        
+        summary {
+            color: #4CAF50;
+            cursor: pointer;
+            padding: 12px;
+            background: #0f3460;
+            border-radius: 8px;
+            font-weight: bold;
+            user-select: none;
+        }
+        
+        summary:hover {
+            background: #1a4d7a;
+        }
+        
+        .events {
+            margin-top: 15px;
+            padding: 15px;
+            background: #0a0e27;
+            border-radius: 8px;
+        }
+        
+        .event {
+            padding: 12px;
+            margin: 8px 0;
+            background: #16213e;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        
+        .event-visitor { border-left-color: #2196F3; }
+        .event-yes { border-left-color: #4CAF50; }
+        .event-no { border-left-color: #ff9800; }
+        .event-frame { border-left-color: #9c27b0; }
+        .event-social { border-left-color: #00bcd4; }
+        
+        .event-type {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .event-time {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+        
+        .event-info {
+            color: #aaa;
+            font-size: 0.95em;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+            font-size: 1.2em;
+        }
+        
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Analytics Dashboard</h1>
+            <p>Özür Dilerim Sitesi - Ziyaretçi Analizi</p>
+        </div>
+        
+        <div class="stats" id="stats"></div>
+        
+        <div class="buttons">
+            <button class="btn-refresh" onclick="loadData()">🔄 Yenile</button>
+            <button class="btn-export" onclick="exportData()">📥 JSON Export</button>
+            <button class="btn-clear" onclick="clearData()">🗑️ Tümünü Temizle</button>
+            <button class="btn-back" onclick="window.location.href='index.html'">← Siteye Dön</button>
+        </div>
+        
+        <div id="sessions"></div>
+    </div>
+
+    <script>
+        const ANALYTICS_KEY = 'site_analytics';
+        
+        function getAnalytics() {
+            const data = localStorage.getItem(ANALYTICS_KEY);
+            return data ? JSON.parse(data) : { sessions: [] };
+        }
+        
+        function loadData() {
+            const analytics = getAnalytics();
+            const sessions = analytics.sessions || [];
+            
+            // İstatistikler
+            const totalSessions = sessions.length;
+            const yesCount = sessions.filter(s => s.events?.some(e => e.type.includes('EVET'))).length;
+            const noAttempts = sessions.reduce((sum, s) => 
+                sum + (s.events?.filter(e => e.type.includes('HAYIR')).length || 0), 0);
+            const avgDuration = sessions.length > 0 ? 
+                Math.round(sessions.reduce((sum, s) => {
+                    if (s.events && s.events.length > 0) {
+                        return sum + (new Date(s.events[s.events.length - 1].timestamp) - new Date(s.startTime)) / 1000;
+                    }
+                    return sum;
+                }, 0) / sessions.length) : 0;
+            
+            document.getElementById('stats').innerHTML = `
+                <div class="stat-card">
+                    <div class="number">${totalSessions}</div>
+                    <div class="label">Toplam Ziyaret</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">${yesCount}</div>
+                    <div class="label">✅ EVET Dedi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">${noAttempts}</div>
+                    <div class="label">❌ HAYIR Denemesi</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number">${avgDuration}s</div>
+                    <div class="label">Ort. Süre</div>
+                </div>
+            `;
+            
+            // Oturumlar
+            const sessionsDiv = document.getElementById('sessions');
+            
+            if (sessions.length === 0) {
+                sessionsDiv.innerHTML = '<div class="no-data">📭 Henüz veri yok. Siteyi ziyaret edin!</div>';
+                return;
+            }
+            
+            sessionsDiv.innerHTML = sessions.slice().reverse().map((session, index) => {
+                const sessionNum = sessions.length - index;
+                const duration = session.events && session.events.length > 0 ? 
+                    Math.round((new Date(session.events[session.events.length - 1].timestamp) - new Date(session.startTime)) / 1000) : 0;
+                
+                const yesEvent = session.events?.find(e => e.type.includes('EVET'));
+                const noCount = session.events?.filter(e => e.type.includes('HAYIR')).length || 0;
+                
+                let resultBadge = '';
+                if (yesEvent) {
+                    resultBadge = '<span class="badge badge-yes">✅ EVET DEDİ</span>';
+                } else if (noCount > 0) {
+                    resultBadge = `<span class="badge badge-no">❌ ${noCount}x HAYIR denedi</span>`;
+                }
+                
+                const events = (session.events || []).map(event => {
+                    let eventClass = 'event-visitor';
+                    if (event.type.includes('EVET')) eventClass = 'event-yes';
+                    else if (event.type.includes('HAYIR')) eventClass = 'event-no';
+                    else if (event.type.includes('FRAME')) eventClass = 'event-frame';
+                    else if (event.type.includes('WHATSAPP') || event.type.includes('INSTAGRAM')) eventClass = 'event-social';
+                    
+                    return `
+                        <div class="event ${eventClass}">
+                            <div class="event-type">${event.type}</div>
+                            <div class="event-time">🕐 ${event.turkeyTime}</div>
+                            ${event.extraInfo ? `<div class="event-info">${event.extraInfo}</div>` : ''}
+                        </div>
+                    `;
+                }).join('');
+                
+                return `
+                    <div class="session">
+                        <div class="session-header">
+                            <div class="session-title">🔹 Oturum #${sessionNum}</div>
+                            ${resultBadge}
+                        </div>
+                        <div class="session-info">
+                            <div class="info-item">
+                                <strong>🆔 ID:</strong>
+                                <span>${session.sessionId}</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>🕐 Zaman:</strong>
+                                <span>${new Date(session.startTime).toLocaleString('tr-TR')}</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>⏱️ Süre:</strong>
+                                <span>${duration} saniye</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>💻 Cihaz:</strong>
+                                <span>${session.deviceInfo.deviceType}</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>🖥️ OS:</strong>
+                                <span>${session.deviceInfo.os}</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>🌐 Tarayıcı:</strong>
+                                <span>${session.deviceInfo.browser}</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>📱 Ekran:</strong>
+                                <span>${session.deviceInfo.screenWidth}x${session.deviceInfo.screenHeight}</span>
+                            </div>
+                            <div class="info-item">
+                                <strong>🔗 Kaynak:</strong>
+                                <span>${session.referrerInfo.referrer}</span>
+                            </div>
+                        </div>
+                        <details>
+                            <summary>📜 Eventler (${session.events?.length || 0})</summary>
+                            <div class="events">
+                                ${events || '<p style="color: #888;">Henüz event yok</p>'}
+                            </div>
+                        </details>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function exportData() {
+            const analytics = getAnalytics();
+            const dataStr = JSON.stringify(analytics, null, 2);
+            const dataBlob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `analytics_${Date.now()}.json`;
+            link.click();
+            alert('✅ Veri indirildi!');
+        }
+        
+        function clearData() {
+            if (confirm('⚠️ Tüm analytics verisini silmek istediğinden emin misin?\n\nBu işlem geri alınamaz!')) {
+                localStorage.removeItem(ANALYTICS_KEY);
+                alert('✅ Tüm veri silindi!');
+                loadData();
+            }
+        }
+        
+        // Sayfa yüklenince veriyi yükle
+        loadData();
+        
+        // Her 5 saniyede bir otomatik yenile
+        setInterval(loadData, 5000);
+    </script>
+</body>
+</html>
+
