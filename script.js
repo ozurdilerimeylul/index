@@ -1,37 +1,159 @@
 // ============================================
-// TRACKING & ANALYTICS SYSTEM
+// ANALYTICS SYSTEM - LocalStorage Based
 // ============================================
 
-console.log('🚀 Analytics System v14 Loaded! (Fetch no-cors - SSL/CORS bypass)');
+console.log('🚀 Analytics System v15 Loaded! (LocalStorage - Webhook kaldırıldı)');
 
-// Webhook URL - Buraya kendi webhook URL'ini koy
-const WEBHOOK_URL = 'https://discord.com/api/webhooks/1429053175108997132/rCuMBbTmg-122Ez6r7PRfEp_PkPCaX4SzAKeVY9h-mHt0TRx033xMbKnuacIimrdu-PO';
-console.log('✅ Webhook URL ayarlandı:', WEBHOOK_URL ? 'OK' : 'HATALI');
-console.log('🔗 URL uzunluğu:', WEBHOOK_URL.length, 'karakter');
+// LocalStorage key
+const ANALYTICS_KEY = 'site_analytics';
 
-// Test webhook gönder (sayfa yüklendiğinde basit test)
-setTimeout(() => {
-    console.log('🧪 TEST WEBHOOK GÖNDERİLİYOR (Fetch no-cors)...');
+// Analytics veriyi al
+function getAnalytics() {
+    const data = localStorage.getItem(ANALYTICS_KEY);
+    return data ? JSON.parse(data) : { sessions: [] };
+}
+
+// Analytics veriyi kaydet
+function saveAnalytics(data) {
+    localStorage.setItem(ANALYTICS_KEY, JSON.stringify(data));
+}
+
+// Event kaydet
+function logEvent(eventType, data) {
+    console.log('📊 Event kaydediliyor:', eventType);
     
-    fetch(WEBHOOK_URL, {
-        method: 'POST',
-        mode: 'no-cors', // SSL/CORS bypass
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            content: '🧪 TEST MESAJI - Webhook çalışıyor!'
-        })
-    })
-    .then(() => {
-        console.log('✅✅✅ TEST GÖNDERİLDİ! (no-cors mode - response okunamıyor ama gitti)');
-        console.log('📱 Discord kanalını kontrol et!');
-    })
-    .catch(error => {
-        console.error('❌ Fetch hatası:', error);
-        console.log('⚠️ Yine de Discord\'a ulaşmış olabilir!');
+    const analytics = getAnalytics();
+    const event = {
+        type: eventType,
+        timestamp: new Date().toISOString(),
+        turkeyTime: new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }),
+        ...data
+    };
+    
+    // Son oturuma ekle
+    if (analytics.sessions.length > 0) {
+        const lastSession = analytics.sessions[analytics.sessions.length - 1];
+        if (!lastSession.events) lastSession.events = [];
+        lastSession.events.push(event);
+    }
+    
+    saveAnalytics(analytics);
+    console.log('✅ Event kaydedildi!');
+}
+
+// Admin dashboard göster
+function showAdminDashboard() {
+    const analytics = getAnalytics();
+    
+    // Ana içeriği gizle
+    document.body.innerHTML = '';
+    document.body.style.background = '#1a1a2e';
+    document.body.style.color = '#eee';
+    document.body.style.padding = '20px';
+    document.body.style.fontFamily = 'monospace';
+    
+    const container = document.createElement('div');
+    container.style.maxWidth = '1200px';
+    container.style.margin = '0 auto';
+    
+    // Header
+    const header = document.createElement('div');
+    header.style.marginBottom = '30px';
+    header.innerHTML = `
+        <h1 style="color: #ff6b9d;">📊 Analytics Dashboard</h1>
+        <p style="color: #aaa;">Toplam Oturum: ${analytics.sessions.length}</p>
+        <button onclick="exportData()" style="padding: 10px 20px; margin-right: 10px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px;">📥 JSON Export</button>
+        <button onclick="clearData()" style="padding: 10px 20px; cursor: pointer; background: #f44336; color: white; border: none; border-radius: 5px;">🗑️ Tümünü Temizle</button>
+        <button onclick="window.location.href=window.location.pathname" style="padding: 10px 20px; margin-left: 10px; cursor: pointer; background: #2196F3; color: white; border: none; border-radius: 5px;">← Siteye Dön</button>
+    `;
+    container.appendChild(header);
+    
+    // Oturumları listele
+    analytics.sessions.reverse().forEach((session, index) => {
+        const sessionDiv = document.createElement('div');
+        sessionDiv.style.background = '#16213e';
+        sessionDiv.style.padding = '20px';
+        sessionDiv.style.marginBottom = '20px';
+        sessionDiv.style.borderRadius = '10px';
+        sessionDiv.style.border = '2px solid #0f3460';
+        
+        const duration = session.events.length > 0 ? 
+            Math.round((new Date(session.events[session.events.length - 1].timestamp) - new Date(session.startTime)) / 1000) : 0;
+        
+        // EVET/HAYIR kontrolü
+        const yesEvent = session.events?.find(e => e.type.includes('EVET'));
+        const noCount = session.events?.filter(e => e.type.includes('HAYIR')).length || 0;
+        
+        let resultBadge = '';
+        if (yesEvent) {
+            resultBadge = '<span style="background: #4CAF50; padding: 5px 10px; border-radius: 5px; margin-left: 10px;">✅ EVET DEDİ</span>';
+        } else if (noCount > 0) {
+            resultBadge = `<span style="background: #ff9800; padding: 5px 10px; border-radius: 5px; margin-left: 10px;">❌ ${noCount}x HAYIR denedi</span>`;
+        }
+        
+        sessionDiv.innerHTML = `
+            <h3 style="color: #ff6b9d; margin-bottom: 10px;">
+                🔹 Oturum #${analytics.sessions.length - index} 
+                ${resultBadge}
+            </h3>
+            <div style="color: #aaa; margin-bottom: 15px;">
+                <strong>ID:</strong> ${session.sessionId}<br>
+                <strong>Başlangıç:</strong> ${new Date(session.startTime).toLocaleString('tr-TR')}<br>
+                <strong>Süre:</strong> ${duration} saniye<br>
+                <strong>Cihaz:</strong> ${session.deviceInfo.deviceType} (${session.deviceInfo.os})<br>
+                <strong>Tarayıcı:</strong> ${session.deviceInfo.browser}<br>
+                <strong>Ekran:</strong> ${session.deviceInfo.screenWidth}x${session.deviceInfo.screenHeight}<br>
+                <strong>Nereden:</strong> ${session.referrerInfo.referrer}
+            </div>
+            <details style="cursor: pointer;">
+                <summary style="color: #4CAF50; cursor: pointer; padding: 10px; background: #0f3460; border-radius: 5px;">
+                    📜 Eventler (${session.events?.length || 0})
+                </summary>
+                <div style="margin-top: 10px; padding: 10px; background: #0a0e27; border-radius: 5px;">
+                    ${(session.events || []).map(event => `
+                        <div style="padding: 8px; margin: 5px 0; background: #16213e; border-left: 3px solid ${event.type.includes('EVET') ? '#4CAF50' : event.type.includes('HAYIR') ? '#ff9800' : '#2196F3'}; border-radius: 3px;">
+                            <strong>${event.type}</strong><br>
+                            <span style="color: #888; font-size: 0.9em;">${event.turkeyTime}</span><br>
+                            ${event.extraInfo ? `<span style="color: #aaa;">${event.extraInfo}</span>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            </details>
+        `;
+        
+        container.appendChild(sessionDiv);
     });
-}, 2000);
+    
+    document.body.appendChild(container);
+}
+
+// Export fonksiyonu
+window.exportData = function() {
+    const analytics = getAnalytics();
+    const dataStr = JSON.stringify(analytics, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `analytics_${Date.now()}.json`;
+    link.click();
+    alert('✅ Veri indirildi!');
+};
+
+// Temizleme fonksiyonu
+window.clearData = function() {
+    if (confirm('Tüm analytics verisini silmek istediğinden emin misin?')) {
+        localStorage.removeItem(ANALYTICS_KEY);
+        alert('✅ Tüm veri silindi!');
+        location.reload();
+    }
+};
+
+// Admin dashboard kontrolü
+if (window.location.search.includes('admin')) {
+    console.log('🔐 ADMIN MODE - Dashboard açılıyor...');
+    setTimeout(() => showAdminDashboard(), 100);
+}
 
 // Oturum ID'si oluştur (her ziyaretçi için unique)
 function generateSessionId() {
@@ -94,111 +216,9 @@ function getReferrerInfo() {
     };
 }
 
-// Webhook'a veri gönder (Basit XHR versiyon - her yerde çalışır)
+// Basit event logger
 function sendToWebhook(eventType, data) {
-    console.log('🔍 sendToWebhook çağrıldı:', eventType);
-    
-    if (!WEBHOOK_URL || WEBHOOK_URL === 'YOUR_WEBHOOK_URL_HERE' || WEBHOOK_URL.trim() === '') {
-        console.log('⚠️ Webhook URL ayarlanmamış. Event:', eventType, 'Data:', data);
-        return;
-    }
-    
-    console.log('📤 Webhook gönderiliyor:', eventType);
-    console.log('📊 Data:', data);
-    
-    const timestamp = new Date().toISOString();
-    const turkeyTime = new Date().toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' });
-    
-    const payload = {
-        content: `📊 **Yeni Olay: ${eventType}**`,
-        embeds: [{
-            title: `${eventType}`,
-            color: eventType.includes('EVET') ? 0x00ff00 : (eventType.includes('HAYIR') ? 0xff0000 : 0x3498db),
-            fields: [
-                {
-                    name: '🕐 Zaman',
-                    value: `${turkeyTime}\n(${timestamp})`,
-                    inline: false
-                },
-                {
-                    name: '🆔 Oturum ID',
-                    value: data.sessionId || 'N/A',
-                    inline: true
-                },
-                {
-                    name: '💻 Cihaz Tipi',
-                    value: data.deviceInfo?.deviceType || 'N/A',
-                    inline: true
-                },
-                {
-                    name: '🌐 Tarayıcı',
-                    value: data.deviceInfo?.browser || 'N/A',
-                    inline: true
-                },
-                {
-                    name: '🖥️ İşletim Sistemi',
-                    value: data.deviceInfo?.os || 'N/A',
-                    inline: true
-                },
-                {
-                    name: '📱 Ekran Çözünürlüğü',
-                    value: data.deviceInfo ? `${data.deviceInfo.screenWidth}x${data.deviceInfo.screenHeight}` : 'N/A',
-                    inline: true
-                },
-                {
-                    name: '🌍 Dil',
-                    value: data.deviceInfo?.language || 'N/A',
-                    inline: true
-                },
-                {
-                    name: '🔗 Nereden Geldi',
-                    value: data.referrerInfo?.referrer || 'Direct',
-                    inline: false
-                },
-                {
-                    name: '📍 Sayfa URL',
-                    value: data.referrerInfo?.currentUrl || 'N/A',
-                    inline: false
-                }
-            ],
-            footer: {
-                text: '💝 Özür Dilerim Sitesi - Analytics'
-            },
-            timestamp: timestamp
-        }]
-    };
-    
-    // Ekstra data varsa ekle
-    if (data.extraInfo) {
-        payload.embeds[0].fields.push({
-            name: '📝 Ek Bilgi',
-            value: data.extraInfo,
-            inline: false
-        });
-    }
-    
-    const payloadString = JSON.stringify(payload);
-    console.log('📦 Payload hazırlandı, boyut:', payloadString.length, 'byte');
-    
-    // Fetch no-cors kullan - SSL/CORS bypass
-    console.log('🚀 Fetch (no-cors) ile gönderiliyor...');
-    
-    fetch(WEBHOOK_URL, {
-        method: 'POST',
-        mode: 'no-cors', // SSL ve CORS sorunlarını bypass eder
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: payloadString
-    })
-    .then(() => {
-        console.log('✅✅✅ WEBHOOK GÖNDERİLDİ!', eventType);
-        console.log('📱 Discord kanalını kontrol et!');
-    })
-    .catch(error => {
-        console.error('❌ Fetch hatası:', error.message, eventType);
-        console.log('⚠️ Yine de Discord\'a ulaşmış olabilir!');
-    });
+    logEvent(eventType, data);
 }
 
 // Oturum başlat
@@ -213,6 +233,14 @@ let sessionData = {
 
 // Sayfa yüklendiğinde oturum başlat
 window.addEventListener('load', () => {
+    // Yeni oturum kaydet
+    const analytics = getAnalytics();
+    analytics.sessions.push(sessionData);
+    saveAnalytics(analytics);
+    
+    console.log('✅ Yeni oturum başlatıldı:', sessionData.sessionId);
+    
+    // İlk event
     sendToWebhook('🎉 YENİ ZİYARETÇİ', {
         sessionId: sessionData.sessionId,
         deviceInfo: sessionData.deviceInfo,
