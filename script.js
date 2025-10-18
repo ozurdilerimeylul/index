@@ -2,7 +2,7 @@
 // ANALYTICS SYSTEM - LocalStorage Based
 // ============================================
 
-console.log('🚀 Analytics System v15 Loaded! (LocalStorage - Webhook kaldırıldı)');
+console.log('🚀 Analytics System v15 Loaded! (LocalStorage - admin.html kullan)');
 
 // LocalStorage key
 const ANALYTICS_KEY = 'site_analytics';
@@ -41,119 +41,7 @@ function logEvent(eventType, data) {
     console.log('✅ Event kaydedildi!');
 }
 
-// Admin dashboard göster
-function showAdminDashboard() {
-    const analytics = getAnalytics();
-    
-    // Ana içeriği gizle
-    document.body.innerHTML = '';
-    document.body.style.background = '#1a1a2e';
-    document.body.style.color = '#eee';
-    document.body.style.padding = '20px';
-    document.body.style.fontFamily = 'monospace';
-    
-    const container = document.createElement('div');
-    container.style.maxWidth = '1200px';
-    container.style.margin = '0 auto';
-    
-    // Header
-    const header = document.createElement('div');
-    header.style.marginBottom = '30px';
-    header.innerHTML = `
-        <h1 style="color: #ff6b9d;">📊 Analytics Dashboard</h1>
-        <p style="color: #aaa;">Toplam Oturum: ${analytics.sessions.length}</p>
-        <button onclick="exportData()" style="padding: 10px 20px; margin-right: 10px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 5px;">📥 JSON Export</button>
-        <button onclick="clearData()" style="padding: 10px 20px; cursor: pointer; background: #f44336; color: white; border: none; border-radius: 5px;">🗑️ Tümünü Temizle</button>
-        <button onclick="window.location.href=window.location.pathname" style="padding: 10px 20px; margin-left: 10px; cursor: pointer; background: #2196F3; color: white; border: none; border-radius: 5px;">← Siteye Dön</button>
-    `;
-    container.appendChild(header);
-    
-    // Oturumları listele
-    analytics.sessions.reverse().forEach((session, index) => {
-        const sessionDiv = document.createElement('div');
-        sessionDiv.style.background = '#16213e';
-        sessionDiv.style.padding = '20px';
-        sessionDiv.style.marginBottom = '20px';
-        sessionDiv.style.borderRadius = '10px';
-        sessionDiv.style.border = '2px solid #0f3460';
-        
-        const duration = session.events.length > 0 ? 
-            Math.round((new Date(session.events[session.events.length - 1].timestamp) - new Date(session.startTime)) / 1000) : 0;
-        
-        // EVET/HAYIR kontrolü
-        const yesEvent = session.events?.find(e => e.type.includes('EVET'));
-        const noCount = session.events?.filter(e => e.type.includes('HAYIR')).length || 0;
-        
-        let resultBadge = '';
-        if (yesEvent) {
-            resultBadge = '<span style="background: #4CAF50; padding: 5px 10px; border-radius: 5px; margin-left: 10px;">✅ EVET DEDİ</span>';
-        } else if (noCount > 0) {
-            resultBadge = `<span style="background: #ff9800; padding: 5px 10px; border-radius: 5px; margin-left: 10px;">❌ ${noCount}x HAYIR denedi</span>`;
-        }
-        
-        sessionDiv.innerHTML = `
-            <h3 style="color: #ff6b9d; margin-bottom: 10px;">
-                🔹 Oturum #${analytics.sessions.length - index} 
-                ${resultBadge}
-            </h3>
-            <div style="color: #aaa; margin-bottom: 15px;">
-                <strong>ID:</strong> ${session.sessionId}<br>
-                <strong>Başlangıç:</strong> ${new Date(session.startTime).toLocaleString('tr-TR')}<br>
-                <strong>Süre:</strong> ${duration} saniye<br>
-                <strong>Cihaz:</strong> ${session.deviceInfo.deviceType} (${session.deviceInfo.os})<br>
-                <strong>Tarayıcı:</strong> ${session.deviceInfo.browser}<br>
-                <strong>Ekran:</strong> ${session.deviceInfo.screenWidth}x${session.deviceInfo.screenHeight}<br>
-                <strong>Nereden:</strong> ${session.referrerInfo.referrer}
-            </div>
-            <details style="cursor: pointer;">
-                <summary style="color: #4CAF50; cursor: pointer; padding: 10px; background: #0f3460; border-radius: 5px;">
-                    📜 Eventler (${session.events?.length || 0})
-                </summary>
-                <div style="margin-top: 10px; padding: 10px; background: #0a0e27; border-radius: 5px;">
-                    ${(session.events || []).map(event => `
-                        <div style="padding: 8px; margin: 5px 0; background: #16213e; border-left: 3px solid ${event.type.includes('EVET') ? '#4CAF50' : event.type.includes('HAYIR') ? '#ff9800' : '#2196F3'}; border-radius: 3px;">
-                            <strong>${event.type}</strong><br>
-                            <span style="color: #888; font-size: 0.9em;">${event.turkeyTime}</span><br>
-                            ${event.extraInfo ? `<span style="color: #aaa;">${event.extraInfo}</span>` : ''}
-                        </div>
-                    `).join('')}
-                </div>
-            </details>
-        `;
-        
-        container.appendChild(sessionDiv);
-    });
-    
-    document.body.appendChild(container);
-}
-
-// Export fonksiyonu
-window.exportData = function() {
-    const analytics = getAnalytics();
-    const dataStr = JSON.stringify(analytics, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `analytics_${Date.now()}.json`;
-    link.click();
-    alert('✅ Veri indirildi!');
-};
-
-// Temizleme fonksiyonu
-window.clearData = function() {
-    if (confirm('Tüm analytics verisini silmek istediğinden emin misin?')) {
-        localStorage.removeItem(ANALYTICS_KEY);
-        alert('✅ Tüm veri silindi!');
-        location.reload();
-    }
-};
-
-// Admin dashboard kontrolü
-if (window.location.search.includes('admin')) {
-    console.log('🔐 ADMIN MODE - Dashboard açılıyor...');
-    setTimeout(() => showAdminDashboard(), 100);
-}
+// Admin dashboard için ayrı admin.html sayfası kullan
 
 // Oturum ID'si oluştur (her ziyaretçi için unique)
 function generateSessionId() {
