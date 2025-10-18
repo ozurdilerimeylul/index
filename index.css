@@ -1,0 +1,532 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #ffffff;
+    color: #333;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    scroll-snap-type: y mandatory;
+    height: 100vh;
+    overflow-y: scroll;
+}
+
+/* Progress Bar */
+.progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+    width: 0%;
+    z-index: 1000;
+    transition: width 0.3s ease;
+}
+
+/* Black Fade Overlay */
+.black-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 999;
+    transition: opacity 1s ease;
+}
+
+.black-overlay.active {
+    opacity: 1;
+}
+
+/* Frame Sections */
+.frame {
+    min-height: 100vh;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
+    opacity: 0;
+    transform: translateY(100px);
+    transition: all 1s ease;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+}
+
+.frame.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.frame-content {
+    max-width: 1000px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    animation: fadeInUp 1s ease;
+}
+
+.frame-image {
+    max-width: 600px;
+    width: 100%;
+    height: auto;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.frame-image:hover {
+    transform: scale(1.05);
+}
+
+.frame-text {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.frame-text h2 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    color: #ff6b9d;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.frame-text p {
+    font-size: 1.3rem;
+    line-height: 1.6;
+    color: #333;
+}
+
+/* Scroll Down Button */
+.scroll-btn {
+    margin-top: 30px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    animation: bounceUpDown 2s infinite;
+    transition: all 0.3s ease;
+}
+
+.scroll-btn img {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+}
+
+.scroll-btn:hover {
+    transform: scale(1.1);
+}
+
+.scroll-btn:active {
+    transform: scale(0.95);
+}
+
+@keyframes bounceUpDown {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+/* Final Frame Styles */
+.final-frame {
+    min-height: 100vh;
+    background: #ffffff;
+}
+
+.question-box {
+    background: rgba(255, 107, 157, 0.1);
+    backdrop-filter: blur(20px);
+    padding: 50px;
+    border-radius: 30px;
+    box-shadow: 0 20px 60px rgba(255, 107, 157, 0.2);
+    text-align: center;
+    border: 2px solid rgba(255, 107, 157, 0.3);
+}
+
+.apology-title {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    color: #ff6b9d;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+    animation: pulse 2s infinite;
+}
+
+.apology-text {
+    font-size: 1.4rem;
+    line-height: 1.8;
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.question {
+    font-size: 2rem;
+    margin-bottom: 40px;
+    color: #ff6b9d;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.button-container {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    align-items: center;
+    min-height: 100px;
+    position: relative;
+}
+
+.btn {
+    padding: 20px 40px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.btn-yes {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    color: white;
+}
+
+.btn-yes:hover {
+    transform: scale(1.1);
+    box-shadow: 0 15px 40px rgba(56, 239, 125, 0.5);
+}
+
+.btn-no {
+    background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+    color: white;
+    transition: all 0.2s ease;
+}
+
+.btn-no:hover {
+    transform: scale(1.05);
+}
+
+/* Success Frame */
+.success-frame {
+    min-height: 100vh;
+    background: #000000;
+}
+
+.success-frame .frame-text {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.success-frame .frame-text h1 {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    animation: bounce 1s infinite;
+    color: #ff6b9d;
+}
+
+.success-frame .frame-text p {
+    font-size: 2rem;
+    color: #ffffff;
+}
+
+/* Social Media Links */
+.social-links {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.social-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 32px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    border-radius: 50px;
+    text-decoration: none;
+    color: white;
+    transition: all 0.4s ease;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.social-btn svg {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease;
+}
+
+.social-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    transition: left 0.5s ease;
+}
+
+.social-btn:hover::before {
+    left: 100%;
+}
+
+.social-btn:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+}
+
+.social-btn:hover svg {
+    transform: rotate(360deg);
+}
+
+.social-btn:active {
+    transform: translateY(-2px) scale(1.02);
+}
+
+.whatsapp-btn {
+    background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+}
+
+.whatsapp-btn:hover {
+    box-shadow: 0 15px 40px rgba(37, 211, 102, 0.5);
+}
+
+.instagram-btn {
+    background: linear-gradient(135deg, #833AB4 0%, #FD1D1D 50%, #F77737 100%);
+}
+
+.instagram-btn:hover {
+    box-shadow: 0 15px 40px rgba(253, 29, 29, 0.5);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes bounce {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .frame {
+        padding: 15px;
+    }
+
+    .frame-content {
+        gap: 20px;
+    }
+
+    .frame-text h2 {
+        font-size: 1.8rem;
+    }
+
+    .frame-text p {
+        font-size: 1rem;
+    }
+
+    .frame-text {
+        padding: 25px;
+    }
+
+    .scroll-btn img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .apology-title {
+        font-size: 2rem;
+    }
+
+    .apology-text {
+        font-size: 1rem;
+        margin-bottom: 25px;
+    }
+
+    .question {
+        font-size: 1.4rem;
+        margin-bottom: 30px;
+    }
+
+    .btn {
+        padding: 18px 35px;
+        font-size: 1.1rem;
+        width: 160px;
+    }
+
+    .button-container {
+        flex-direction: row;
+        gap: 15px;
+        flex-wrap: wrap;
+        padding: 20px;
+    }
+
+    .question-box {
+        padding: 30px 20px;
+        max-width: 95%;
+    }
+
+    /* Mobile specific - keep buttons in view */
+    .btn-no {
+        touch-action: none;
+    }
+
+    .social-links {
+        margin-top: 20px;
+        gap: 15px;
+    }
+
+    .social-btn {
+        padding: 14px 24px;
+        font-size: 1rem;
+        gap: 10px;
+    }
+
+    .social-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .success-frame .frame-text h1 {
+        font-size: 2.5rem;
+    }
+
+    .success-frame .frame-text p {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .frame-image {
+        max-width: 100%;
+        border-radius: 15px;
+    }
+
+    .frame-text {
+        padding: 20px 15px;
+    }
+
+    .frame-text h2 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+
+    .frame-text p {
+        font-size: 0.95rem;
+    }
+
+    .scroll-btn {
+        margin-top: 20px;
+    }
+
+    .scroll-btn img {
+        width: 35px;
+        height: 35px;
+    }
+
+    .apology-title {
+        font-size: 1.7rem;
+    }
+
+    .apology-text {
+        font-size: 0.95rem;
+        line-height: 1.6;
+    }
+
+    .question {
+        font-size: 1.2rem;
+    }
+
+    .btn {
+        padding: 15px 25px;
+        font-size: 1rem;
+        width: 140px;
+    }
+
+    .question-box {
+        padding: 25px 15px;
+    }
+
+    .button-container {
+        gap: 12px;
+    }
+
+    .social-links {
+        margin-top: 15px;
+        gap: 12px;
+        flex-direction: column;
+    }
+
+    .social-btn {
+        padding: 12px 20px;
+        font-size: 0.9rem;
+        gap: 8px;
+        width: 100%;
+        max-width: 250px;
+    }
+
+    .social-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .success-frame .frame-text h1 {
+        font-size: 2rem;
+    }
+
+    .success-frame .frame-text p {
+        font-size: 1.2rem;
+    }
+}
+
