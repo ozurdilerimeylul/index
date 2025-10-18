@@ -2,7 +2,7 @@
 // TRACKING & ANALYTICS SYSTEM
 // ============================================
 
-console.log('🚀 Analytics System v12 Loaded! (Basit XHR - karmaşık sistemler kaldırıldı)');
+console.log('🚀 Analytics System v13 Loaded! (Timeout handler eklendi)');
 
 // Webhook URL - Buraya kendi webhook URL'ini koy
 const WEBHOOK_URL = 'https://discord.com/api/webhooks/1429053175108997132/rCuMBbTmg-122Ez6r7PRfEp_PkPCaX4SzAKeVY9h-mHt0TRx033xMbKnuacIimrdu-PO';
@@ -16,10 +16,11 @@ setTimeout(() => {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', WEBHOOK_URL, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 10000;
     
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
-            console.log('✅ TEST BAŞARILI! Status:', xhr.status);
+            console.log('✅✅✅ TEST BAŞARILI! Status:', xhr.status);
             console.log('📱 Discord kanalını kontrol et!');
         } else {
             console.error('❌ Test başarısız, status:', xhr.status);
@@ -27,7 +28,11 @@ setTimeout(() => {
     };
     
     xhr.onerror = function() {
-        console.error('❌ Network hatası');
+        console.error('❌ Network hatası - ama Discord\'da görünebilir!');
+    };
+    
+    xhr.ontimeout = function() {
+        console.warn('⏱️ Test timeout - Discord\'da kontrol et yine de!');
     };
     
     xhr.send(JSON.stringify({
@@ -188,17 +193,23 @@ function sendToWebhook(eventType, data) {
     const xhr = new XMLHttpRequest();
     xhr.open('POST', WEBHOOK_URL, true);
     xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.timeout = 10000; // 10 saniye timeout
     
     xhr.onload = function() {
         if (xhr.status >= 200 && xhr.status < 300) {
-            console.log('✅ Webhook başarıyla gönderildi! Status:', xhr.status, eventType);
+            console.log('✅✅✅ WEBHOOK BAŞARILI! Status:', xhr.status, eventType);
         } else {
-            console.error('❌ HTTP Hatası:', xhr.status, xhr.statusText);
+            console.error('❌ HTTP Hatası:', xhr.status, xhr.statusText, eventType);
         }
     };
     
     xhr.onerror = function() {
         console.error('❌ Network hatası:', eventType);
+        console.log('⚠️ Ama Discord\'da görünmüş olabilir, kontrol et!');
+    };
+    
+    xhr.ontimeout = function() {
+        console.warn('⏱️ Timeout:', eventType, '- Yine de Discord\'a ulaşmış olabilir!');
     };
     
     xhr.send(payloadString);
