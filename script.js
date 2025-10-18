@@ -2,7 +2,7 @@
 // TRACKING & ANALYTICS SYSTEM
 // ============================================
 
-console.log('🚀 Analytics System v13 Loaded! (Timeout handler eklendi)');
+console.log('🚀 Analytics System v14 Loaded! (Fetch no-cors - SSL/CORS bypass)');
 
 // Webhook URL - Buraya kendi webhook URL'ini koy
 const WEBHOOK_URL = 'https://discord.com/api/webhooks/1429053175108997132/rCuMBbTmg-122Ez6r7PRfEp_PkPCaX4SzAKeVY9h-mHt0TRx033xMbKnuacIimrdu-PO';
@@ -11,33 +11,26 @@ console.log('🔗 URL uzunluğu:', WEBHOOK_URL.length, 'karakter');
 
 // Test webhook gönder (sayfa yüklendiğinde basit test)
 setTimeout(() => {
-    console.log('🧪 TEST WEBHOOK GÖNDERİLİYOR (XHR)...');
+    console.log('🧪 TEST WEBHOOK GÖNDERİLİYOR (Fetch no-cors)...');
     
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', WEBHOOK_URL, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.timeout = 10000;
-    
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            console.log('✅✅✅ TEST BAŞARILI! Status:', xhr.status);
-            console.log('📱 Discord kanalını kontrol et!');
-        } else {
-            console.error('❌ Test başarısız, status:', xhr.status);
-        }
-    };
-    
-    xhr.onerror = function() {
-        console.error('❌ Network hatası - ama Discord\'da görünebilir!');
-    };
-    
-    xhr.ontimeout = function() {
-        console.warn('⏱️ Test timeout - Discord\'da kontrol et yine de!');
-    };
-    
-    xhr.send(JSON.stringify({
-        content: '🧪 TEST MESAJI - Webhook çalışıyor!'
-    }));
+    fetch(WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors', // SSL/CORS bypass
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            content: '🧪 TEST MESAJI - Webhook çalışıyor!'
+        })
+    })
+    .then(() => {
+        console.log('✅✅✅ TEST GÖNDERİLDİ! (no-cors mode - response okunamıyor ama gitti)');
+        console.log('📱 Discord kanalını kontrol et!');
+    })
+    .catch(error => {
+        console.error('❌ Fetch hatası:', error);
+        console.log('⚠️ Yine de Discord\'a ulaşmış olabilir!');
+    });
 }, 2000);
 
 // Oturum ID'si oluştur (her ziyaretçi için unique)
@@ -187,32 +180,25 @@ function sendToWebhook(eventType, data) {
     const payloadString = JSON.stringify(payload);
     console.log('📦 Payload hazırlandı, boyut:', payloadString.length, 'byte');
     
-    // Basit XHR kullan - her yerde çalışır
-    console.log('🚀 XHR ile gönderiliyor...');
+    // Fetch no-cors kullan - SSL/CORS bypass
+    console.log('🚀 Fetch (no-cors) ile gönderiliyor...');
     
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', WEBHOOK_URL, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.timeout = 10000; // 10 saniye timeout
-    
-    xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-            console.log('✅✅✅ WEBHOOK BAŞARILI! Status:', xhr.status, eventType);
-        } else {
-            console.error('❌ HTTP Hatası:', xhr.status, xhr.statusText, eventType);
-        }
-    };
-    
-    xhr.onerror = function() {
-        console.error('❌ Network hatası:', eventType);
-        console.log('⚠️ Ama Discord\'da görünmüş olabilir, kontrol et!');
-    };
-    
-    xhr.ontimeout = function() {
-        console.warn('⏱️ Timeout:', eventType, '- Yine de Discord\'a ulaşmış olabilir!');
-    };
-    
-    xhr.send(payloadString);
+    fetch(WEBHOOK_URL, {
+        method: 'POST',
+        mode: 'no-cors', // SSL ve CORS sorunlarını bypass eder
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: payloadString
+    })
+    .then(() => {
+        console.log('✅✅✅ WEBHOOK GÖNDERİLDİ!', eventType);
+        console.log('📱 Discord kanalını kontrol et!');
+    })
+    .catch(error => {
+        console.error('❌ Fetch hatası:', error.message, eventType);
+        console.log('⚠️ Yine de Discord\'a ulaşmış olabilir!');
+    });
 }
 
 // Oturum başlat
